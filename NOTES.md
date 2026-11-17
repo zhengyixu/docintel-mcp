@@ -2,6 +2,13 @@
 
 Running log of decisions and surprises. Newest first. One or two lines each.
 
+## 2026-11-17
+
+- Security phase 1: actions pinned to commit SHAs (a moved tag cannot change CI) at the cost of manual bumps,
+  so Dependabot updates them weekly, minor/patch grouped; pip-audit runs on `uv export --all-extras` with
+  `--require-hashes`, auditing exactly the locked set (including the `aws` extra) without resolving again,
+  but CI now fails on any new advisory, even one in a dev-only dependency.
+
 ## 2026-11-16 (review)
 
 Two full reviews of stage 1. The second one ran the edge cases instead of only reading the code,
