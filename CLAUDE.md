@@ -36,6 +36,8 @@ uv sync                                   # install from the lockfile
 uv run pytest
 uv run ruff check . && uv run ruff format .
 uv run docintel-mcp                       # run the server over stdio
+uv export --quiet --frozen --all-extras --no-emit-project -o /tmp/req.txt \
+  && uvx --python 3.12 pip-audit==2.10.1 -r /tmp/req.txt --require-hashes --disable-pip   # audit locked deps
 uv add <pkg>    /    uv add --dev <pkg>   # add dependencies
 ```
 
