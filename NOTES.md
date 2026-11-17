@@ -4,6 +4,9 @@ Running log of decisions and surprises. Newest first. One or two lines each.
 
 ## 2026-11-17
 
+- Fixed review bug 1: tools raise `ToolError` for failures an agent can act on (unknown document,
+  bad name or id, missing result, non-UTF-8 file); everything else stays a hidden crash. `store.py` raises
+  its own `InvalidDocumentId` and no longer echoes the id. Five new tests, each checked by undoing its fix.
 - Security phase 1: actions pinned to commit SHAs (a moved tag cannot change CI) at the cost of manual bumps,
   so Dependabot updates them weekly, minor/patch grouped; pip-audit runs on `uv export --all-extras` with
   `--require-hashes`, auditing exactly the locked set (including the `aws` extra) without resolving again,
@@ -46,14 +49,14 @@ Open items from the 2026-11-16 review, most important first. Delete a line when 
 
 Bugs (reproduced):
 
-- `server.py:52,56,58,91,101`, `store.py:24`: error messages never reach the agent (`ValueError`, not `ToolError`).
 - `rules.py:80`: `\s*` after the colon crosses newlines. A blank `Insured:` yields the next line at 0.95, status `accepted`.
 - `rules.py:113`: unreadable claim rows are dropped silently. A zero-incurred row with status `Reopened` vanished; result `accepted`.
 
 Audit log:
 
 - `audit.py:33`: `str(exc)` can carry stored values (a corrupted result file logged `input_value=...`). Hole in threat #9.
-- `audit.py:39`, `store.py:24`: no size limit. A 5,000-character id made a 10 KB record.
+- `audit.py:39`: no size limit on logged arguments. A 5,000-character id still makes a 10 KB record
+  (the error message no longer echoes it).
 - `audit.py:39`: only keyword arguments are logged; a positional call logs `{}`.
 - The record does not say which `document_id` or status a call produced.
 
@@ -72,8 +75,6 @@ Smaller:
 
 Tests to write (line each one guards):
 
-- Error text reaches the agent: `server.py:52`, `:56`, `:91`. Fails today.
-- Crash details stay on the server (non-UTF-8 file): guards a careless `ValueError` → `ToolError` translation.
 - Blank label does not take the next line: `rules.py:80`.
 - Unreadable claim row lowers `claims` confidence below 0.80: `rules.py:113`.
 - Oversize file refused: `server.py:57`.
