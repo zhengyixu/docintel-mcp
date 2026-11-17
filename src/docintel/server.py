@@ -18,12 +18,13 @@ from pathlib import Path
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
 from docintel.audit import audited
 from docintel.extractors.rules import RulesExtractor
 from docintel.pipeline import process
-from docintel.schemas import REVIEW_THRESHOLD
-from docintel.store import ResultStore
+from docintel.schemas import REVIEW_THRESHOLD, ExtractionResult
+from docintel.store import InvalidDocumentId, ResultStore
 
 DOCUMENT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,100}\.txt$")
 MAX_DOCUMENT_BYTES = 200_000
@@ -47,16 +48,40 @@ def store() -> ResultStore:
     return ResultStore(Path(os.environ.get("DOCINTEL_DATA", ".data/results")))
 
 
+# Errors: raise ToolError for failures the agent can act on. SDK 2.x shows the agent a ToolError's
+# message and hides every other exception behind "Error executing tool <name>", which is what we
+# want for crashes (their text can carry paths or stored values). Messages here are fixed wording
+# plus input that has already passed validation.
+
+
 def _resolve_document(document_name: str) -> Path:
     if not DOCUMENT_NAME.match(document_name):
-        raise ValueError("document_name must be a plain .txt file name from list_documents.")
+        raise ToolError("document_name must be a plain .txt file name from list_documents.")
     inbox = inbox_dir()
     path = (inbox / document_name).resolve()
     if path.parent != inbox or not path.is_file():
-        raise ValueError(f"Unknown document: {document_name}")
+        raise ToolError(f"Unknown document: {document_name}")
     if path.stat().st_size > MAX_DOCUMENT_BYTES:
-        raise ValueError(f"Document is larger than {MAX_DOCUMENT_BYTES} bytes.")
+        raise ToolError(f"Document is larger than {MAX_DOCUMENT_BYTES} bytes.")
     return path
+
+
+def _read_document(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        # Not a crash: the file is simply not text we can read. Keep the codec detail out.
+        raise ToolError("Document is not UTF-8 text.") from exc
+
+
+def _get_result(document_id: str) -> ExtractionResult:
+    try:
+        result = store().get(document_id)
+    except InvalidDocumentId as exc:
+        raise ToolError(str(exc)) from exc
+    if result is None:
+        raise ToolError(f"No extraction found for {document_id}")
+    return result
 
 
 @mcp.tool()
@@ -75,7 +100,7 @@ def extract_document(document_name: str) -> dict[str, Any]:
     rejected), the normalized data, and any validation issues.
     """
     path = _resolve_document(document_name)
-    result = process(document_name, path.read_text(encoding="utf-8"), RulesExtractor())
+    result = process(document_name, _read_document(path), RulesExtractor())
     store().save(result)
     return result.model_dump(mode="json", exclude={"fields"}) | {
         "low_confidence_field_count": len(result.low_confidence_fields()),
@@ -85,20 +110,21 @@ def extract_document(document_name: str) -> dict[str, Any]:
 @mcp.tool()
 @audited
 def get_extraction(document_id: str) -> dict[str, Any]:
-    """Fetch a stored extraction result, including per-field confidence, by document id."""
-    result = store().get(document_id)
-    if result is None:
-        raise ValueError(f"No extraction found for {document_id}")
-    return result.model_dump(mode="json")
+    """Fetch a stored extraction result, including per-field confidence, by document id.
+
+    The document_id comes from extract_document (format: doc_ followed by 12 hex characters).
+    """
+    return _get_result(document_id).model_dump(mode="json")
 
 
 @mcp.tool()
 @audited
 def list_low_confidence_fields(document_id: str) -> dict[str, Any]:
-    """List the fields of a stored extraction that need human review, and why."""
-    result = store().get(document_id)
-    if result is None:
-        raise ValueError(f"No extraction found for {document_id}")
+    """List the fields of a stored extraction that need human review, and why.
+
+    The document_id comes from extract_document (format: doc_ followed by 12 hex characters).
+    """
+    result = _get_result(document_id)
     return {
         "document_id": document_id,
         "status": result.status,

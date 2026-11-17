@@ -55,8 +55,8 @@ uv add <pkg>    /    uv add --dev <pkg>   # add dependencies
   included, arrives as a bare `Error executing tool <name>`. Do not convert `ValueError` to
   `ToolError` wholesale: `UnicodeDecodeError` and Pydantic's `ValidationError` are `ValueError`
   subclasses and would leak details. Layers below the server (`store.py`, `pipeline.py`) raise
-  their own exception types and never import from `mcp`.
-  **Not migrated yet:** `server.py` and `store.py` still raise `ValueError`; see the backlog in `NOTES.md`.
+  their own exception types (for example `store.InvalidDocumentId`) and never import from `mcp`;
+  `server.py` translates the ones an agent can act on.
 - Error-path tests assert on the message the agent receives, not only on `is_error`.
 - Error messages and audit records never echo unbounded caller input or exception text that can
   carry document or stored values.
