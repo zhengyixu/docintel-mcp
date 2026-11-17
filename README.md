@@ -101,6 +101,18 @@ npx @modelcontextprotocol/inspector uv run docintel-mcp
 - `docs/threat-model.md` – threats specific to exposing tools to AI agents
 - `NOTES.md` – running log of decisions and surprises
 
+## Security
+
+| Phase | Controls | Status |
+|---|---|---|
+| 0 | GitHub settings: Dependabot alerts and security updates, private vulnerability reporting, secret scanning with push protection, `main` protected from deletion and force-push | **Done** |
+| 1 | Actions pinned to commit SHAs, least-privilege workflow token (`contents: read`), Dependabot version updates (uv, GitHub Actions), ruff security rules (`S`), pip-audit of the locked dependencies in CI, `SECURITY.md`, `CODEOWNERS` | **Done** |
+| 2 | CodeQL, Semgrep, dependency review on pull requests, SBOM, SARIF results in code scanning | Planned |
+| 3 | Custom Semgrep rules with tests, aimed at this codebase: every tool wrapped in `@audited`, no `print()` in `src/`, tools raise `ToolError` | Planned |
+
+Known issues: see "Review backlog" in [`NOTES.md`](NOTES.md). To report a vulnerability, see
+[`SECURITY.md`](SECURITY.md). Threats and mitigations: [`docs/threat-model.md`](docs/threat-model.md).
+
 ## License
 
 MIT. See `LICENSE`.
