@@ -66,7 +66,7 @@ Smaller:
 
 - `server.py:66`: `list_documents` lists files that `extract_document` refuses (symlinks, oversize, non-UTF-8).
 - `validation.py:18`: `_dates_in_order` has no type hints.
-- The folder is not a git repository yet, so CI has never run. `.claude/settings.local.json` is not gitignored.
+- `.claude/settings.local.json` is kept out of git only by the global gitignore; add it to `.gitignore`.
 - `docs/threat-model.md`: #9 is marked done but has the hole above; #8 claims idempotent re-runs
   limit cost, but `extract_document` always re-extracts.
 
