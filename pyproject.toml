@@ -38,4 +38,8 @@ target-version = "py312"
 extend-exclude = ["learning"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+# pytest uses bare assert; S101 only matters where `python -O` could strip a check.
+"tests/**" = ["S101"]
