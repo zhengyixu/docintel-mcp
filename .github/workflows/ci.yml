@@ -19,3 +19,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
+      - name: Audit locked dependencies (pip-audit)
+        run: |
+          uv export --quiet --frozen --all-extras --no-emit-project -o "$RUNNER_TEMP/requirements.txt"
+          uvx --python 3.12 pip-audit==2.10.1 -r "$RUNNER_TEMP/requirements.txt" --require-hashes --disable-pip
