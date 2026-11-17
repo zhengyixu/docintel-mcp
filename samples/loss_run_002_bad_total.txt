@@ -1,0 +1,15 @@
+LOSS RUN REPORT
+(Synthetic sample. All names and numbers are invented. The stated total is wrong on purpose.)
+
+Insured: Kestrel Hauling Inc
+Insurer: Granite State Indemnity
+Policy Number: CA-77310042
+Policy Effective: 01/15/2025
+Policy Expiration: 01/15/2026
+Valuation Date: 06/30/2026
+
+Claim Number | Loss Date | Status | Description | Paid | Reserve | Total Incurred
+CLM-2025-0101 | 03/09/2025 | Closed | Sideswipe in loading yard | 3,100.00 | 0.00 | 3,100.00
+CLM-2025-0102 | 07/22/2025 | Open | Rollover, total loss of tractor | 60,000.00 | 25,000.00 | 85,000.00
+
+Total Incurred: 98,100.00

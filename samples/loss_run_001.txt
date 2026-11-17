@@ -1,0 +1,16 @@
+LOSS RUN REPORT
+(Synthetic sample. All names and numbers are invented.)
+
+Insured: Redwood Freight Carriers LLC
+Insurer: Northfield Mutual Casualty Company
+Policy Number: CAL-00391552
+Policy Effective: 07/01/2025
+Policy Expiration: 07/01/2026
+Valuation Date: 09/30/2026
+
+Claim Number | Loss Date | Status | Description | Paid | Reserve | Total Incurred
+CLM-2025-0001 | 08/14/2025 | Closed | Rear-end collision, trailer damage | 12,500.00 | 0.00 | 12,500.00
+CLM-2025-0002 | 11/03/2025 | Closed | Cargo damage, refrigerated load | 8,240.50 | 0.00 | 8,240.50
+CLM-2026-0003 | 02/21/2026 | Open | Jackknife on I-78, bodily injury claim | 45,000.00 | 80,000.00 | 125,000.00
+
+Total Incurred: 145,740.50
